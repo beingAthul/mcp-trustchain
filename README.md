@@ -6,7 +6,7 @@ MCP-Trustchain is a security enforcement system that protects AI agent ecosystem
 
 ---
 
-## 🔐 What It Does
+##  What It Does
 
 Modern AI agents rely on MCP servers to invoke external tools. A compromised or maliciously crafted `mcp.json` configuration can expose systems to remote code execution, credential theft, data exfiltration, and privilege escalation.
 
@@ -20,7 +20,7 @@ All decisions are recorded in a tamper-evident **audit log** with timestamps and
 
 ---
 
-## ✨ Features
+##  Features
 
 | Feature | Description |
 |---|---|
@@ -35,7 +35,7 @@ All decisions are recorded in a tamper-evident **audit log** with timestamps and
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 mcp-trustchain/
@@ -66,7 +66,7 @@ mcp-trustchain/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -109,7 +109,7 @@ deactivate
 
 ---
 
-## 🌐 Web Interface
+## Web Interface
 
 | Page | URL | Description |
 |---|---|---|
@@ -195,7 +195,7 @@ Returns the last 100 audit log entries, ordered by most recent.
 
 ---
 
-## 🧪 Client Simulator
+## Client Simulator
 
 The `client_sim/` directory contains a CLI tool and sample configs to test the full verification workflow.
 
@@ -211,7 +211,7 @@ python client_sim/mcp_client.py client_sim/compromised_rce.json git-tool-v1
 
 ---
 
-## 🛡️ Security Rules
+## Security Rules
 
 Rules are defined in `app/core/rules.yaml` and can be extended without touching the application code.
 
@@ -225,7 +225,7 @@ Rules are defined in `app/core/rules.yaml` and can be extended without touching 
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 - **Backend:** [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)
 - **Templating:** [Jinja2](https://jinja.palletsprojects.com/)

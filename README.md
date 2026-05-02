@@ -236,6 +236,3 @@ Rules are defined in `app/core/rules.yaml` and can be extended without touching 
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.

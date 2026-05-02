@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block header_title %}Security Dashboard{% endblock %}
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Live Metric Cards -->
+    <div>
+        <div class="flex items-center gap-2 mb-5">
+            <div class="w-1 h-4 rounded bg-brandIndigo"></div>
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-widest">System Overview</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            <!-- Total Tools -->
+            <div class="rounded-xl p-5 border border-brandBlue/20 relative overflow-hidden"
+                style="background: linear-gradient(135deg, #0f1f3a 0%, #0b1a30 100%);">
+                <div class="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -mr-8 -mt-8"
+                    style="background: rgba(59,130,246,0.15)"></div>
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Total Tools</p>
+                        <h3 class="text-4xl font-bold text-white">{{ metrics.total_tools }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background:rgba(59,130,246,0.15)">
+                        <svg class="w-5 h-5 text-brandBlue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-xs text-brandBlue/70 mt-3 font-medium relative z-10">Registered in system</p>
+            </div>
+
+            <!-- Approved -->
+            <div class="rounded-xl p-5 border border-brandTeal/20 relative overflow-hidden glow-teal"
+                style="background: linear-gradient(135deg, #0a2321 0%, #071c1a 100%);">
+                <div class="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -mr-8 -mt-8"
+                    style="background: rgba(20,184,166,0.2)"></div>
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Approved</p>
+                        <h3 class="text-4xl font-bold text-white">{{ metrics.approved_tools }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background:rgba(20,184,166,0.2)">
+                        <svg class="w-5 h-5 text-brandTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-xs text-brandTeal/70 mt-3 font-medium relative z-10">Cleared for execution</p>
+            </div>
+
+            <!-- Blocked -->
+            <div class="rounded-xl p-5 border border-brandRed/20 relative overflow-hidden glow-red"
+                style="background: linear-gradient(135deg, #2a0a0a 0%, #1f0707 100%);">
+                <div class="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -mr-8 -mt-8"
+                    style="background: rgba(239,68,68,0.2)"></div>
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Blocked</p>
+                        <h3 class="text-4xl font-bold text-white">{{ metrics.blocked_tools }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background:rgba(239,68,68,0.2)">
+                        <svg class="w-5 h-5 text-brandRed" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-xs text-brandRed/70 mt-3 font-medium relative z-10">Quarantined tools</p>
+            </div>
+
+            <!-- Integrity Violations -->
+            <div class="rounded-xl p-5 border border-brandAmber/20 relative overflow-hidden glow-amber"
+                style="background: linear-gradient(135deg, #241a05 0%, #1a1303 100%);">
+                <div class="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -mr-8 -mt-8"
+                    style="background: rgba(245,158,11,0.2)"></div>
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Integrity Violations
+                        </p>
+                        <h3 class="text-4xl font-bold text-white">{{ metrics.integrity_violations }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background:rgba(245,158,11,0.2)">
+                        <svg class="w-5 h-5 text-brandAmber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-xs text-brandAmber/70 mt-3 font-medium relative z-10">Post-approval tampering events</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Info + CTA -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 rounded-xl p-6 border border-border/60"
+            style="background: linear-gradient(135deg, #0e1c30 0%, #0a1625 100%);">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center glow-purple"
+                    style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-white mb-1">How Trustchain Protects Your Stack</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        MCP-Trustchain enforces <span class="text-brandTeal font-medium">deterministic, static security
+                            policies</span> on MCP tool configurations before any execution is permitted. Every approved
+                        tool receives a canonical <span
+                            class="font-mono text-xs bg-slate-800 text-brandAmber px-1 py-0.5 rounded">SHA-256</span>
+                        hash. Any post-approval deviation is flagged as <span class="text-brandRed font-medium">tool
+                            poisoning</span> and blocked immediately — no ML, no runtime sandboxing, fully auditable.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl p-6 border border-border/60 flex flex-col gap-3"
+            style="background: linear-gradient(135deg, #0e1c30 0%, #0a1625 100%);">
+            <h3 class="text-sm font-semibold text-slate-300 mb-1">Quick Actions</h3>
+            <a href="/scanner"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-900 transition-all hover:brightness-110"
+                style="background: linear-gradient(90deg, #0d9488, #14b8a6);">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Scan New Configuration
+            </a>
+            <a href="/verify"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white border border-border/80 transition-all hover:border-brandIndigo/50 hover:bg-brandIndigo/5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Simulate Verification
+            </a>
+            <a href="/registry"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white border border-border/80 transition-all hover:border-brandBlue/50 hover:bg-brandBlue/5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                View Tool Registry
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

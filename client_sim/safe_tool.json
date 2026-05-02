@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "git-tool": {
+            "command": "git",
+            "args": [
+                "status",
+                "-s"
+            ],
+            "env": {
+                "GIT_DIR": "./my-project"
+            }
+        }
+    }
+}

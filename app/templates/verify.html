@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block header_title %}Verify Simulation{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="height:calc(100vh - 130px);">
+
+    <!-- LEFT: Execution Request -->
+    <div class="rounded-xl border border-border/60 flex flex-col overflow-hidden"
+        style="background: linear-gradient(135deg,#0e1d2e,#0a1624);">
+        <div class="px-6 py-4 border-b border-border/60 flex items-center gap-3"
+            style="background:rgba(168,85,247,0.07)">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(168,85,247,0.2)">
+                <svg class="w-3.5 h-3.5 text-brandPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-sm font-semibold text-white">Execution Request</h2>
+                <p class="text-xs text-slate-500">Simulate an MCP Client requesting tool execution</p>
+            </div>
+        </div>
+        <div class="p-5 flex-1 flex flex-col gap-4 overflow-y-auto">
+            <div>
+                <label class="block text-xs text-slate-500 font-medium uppercase tracking-wider mb-1.5">Target Tool
+                    ID</label>
+                <input type="text" id="verifyToolId" placeholder="Tool ID (must be previously approved)"
+                    class="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brandPurple/60 transition-colors placeholder-slate-600">
+            </div>
+            <div class="flex-1 flex flex-col min-h-0">
+                <label class="block text-xs text-slate-500 font-medium uppercase tracking-wider mb-1.5">mcp.json
+                    Execution Payload</label>
+                <textarea id="verifyJson"
+                    class="flex-1 w-full bg-surface border border-border rounded-lg p-3 font-mono text-xs text-slate-300 resize-none focus:outline-none focus:border-brandPurple/60 transition-colors min-h-[260px]"
+                    placeholder='Paste the configuration to validate…'></textarea>
+            </div>
+            <button id="verifyBtn"
+                class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
+                style="background: linear-gradient(90deg,#7c3aed,#a855f7);"
+                onmouseover="this.style.boxShadow='0 0 20px rgba(168,85,247,0.4)'"
+                onmouseout="this.style.boxShadow='none'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Request Validation from Trustchain
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT: Decision Engine -->
+    <div class="rounded-xl border border-border/60 flex flex-col overflow-hidden"
+        style="background: linear-gradient(135deg,#0e1d2e,#0a1624);">
+        <div class="px-6 py-4 border-b border-border/60 flex items-center gap-3"
+            style="background:rgba(20,184,166,0.05)">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(20,184,166,0.15)">
+                <svg class="w-3.5 h-3.5 text-brandTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h2 class="text-sm font-semibold text-white">Trustchain Decision Engine</h2>
+        </div>
+
+        <!-- Empty State -->
+        <div id="verifyEmptyState" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-14 h-14 rounded-full border border-border/60 flex items-center justify-center mb-4"
+                style="background:rgba(20,184,166,0.05)">
+                <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h3 class="text-sm font-medium text-slate-400">Awaiting Validation Request</h3>
+            <p class="text-xs text-slate-600 mt-2 max-w-xs leading-relaxed">Submit a tool execution request to run the
+                cryptographic integrity check and receive an enforcement decision.</p>
+        </div>
+
+        <!-- Results -->
+        <div id="verifyResults" class="hidden flex-1 flex flex-col p-6 gap-6 overflow-y-auto">
+            <!-- Decision Banner -->
+            <div id="decisionBanner" class="text-center py-5 rounded-xl border">
+                <div id="finalDecisionBadge"
+                    class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border mb-2">
+                </div>
+                <h3 id="finalDecisionReason" class="text-sm font-medium"></h3>
+            </div>
+
+            <!-- Hash Comparison -->
+            <div class="space-y-3">
+                <div>
+                    <p
+                        class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-1.5 flex items-center gap-1.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14" />
+                        </svg>
+                        Authority Hash (Expected)
+                    </p>
+                    <div id="expectedHashBox"
+                        class="rounded-lg border border-border p-3 font-mono text-xs text-slate-400 break-all select-all"
+                        style="background:#07111e"></div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <div id="matchIndicator"
+                        class="w-9 h-9 rounded-full flex items-center justify-center border-2 shadow-lg z-10"
+                        style="background:#07111e"></div>
+                </div>
+                <div>
+                    <p
+                        class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-1.5 flex items-center gap-1.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Execution Payload Hash (Current)
+                    </p>
+                    <div id="currentHashBox"
+                        class="rounded-lg border p-3 font-mono text-xs break-all select-all transition-all duration-500"
+                        style="background:#07111e; border-color:#1e3a5f"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('verifyBtn').addEventListener('click', async () => {
+        const tId = document.getElementById('verifyToolId').value.trim();
+        const payload = document.getElementById('verifyJson').value.trim();
+        if (!tId || !payload) return alert('Please provide Tool ID and configuration JSON.');
+        let parsed; try { parsed = JSON.parse(payload); } catch (e) { return alert('Invalid JSON format.'); }
+
+        try {
+            const resp = await fetch('/api/v1/verify', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool_id: tId, config: parsed })
+            });
+            const data = await resp.json();
+            document.getElementById('verifyEmptyState').classList.add('hidden');
+            document.getElementById('verifyResults').classList.remove('hidden');
+            renderVerify(data);
+        } catch (e) { alert('Error communicating with Verify API.'); }
+    });
+
+    function renderVerify(data) {
+        const banner = document.getElementById('decisionBanner');
+        const badge = document.getElementById('finalDecisionBadge');
+        const reason = document.getElementById('finalDecisionReason');
+        const expBox = document.getElementById('expectedHashBox');
+        const curBox = document.getElementById('currentHashBox');
+        const ind = document.getElementById('matchIndicator');
+
+        expBox.textContent = data.expected_hash || 'N/A';
+        curBox.textContent = data.current_hash || 'N/A';
+
+        if (data.decision === 'ALLOW') {
+            banner.style.background = 'rgba(20,184,166,0.07)';
+            banner.style.borderColor = 'rgba(20,184,166,0.3)';
+            badge.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border bg-brandTeal/10 text-brandTeal border-brandTeal/30';
+            badge.textContent = '✓ Execution Authorized';
+            reason.className = 'text-sm font-medium text-brandTeal';
+            reason.textContent = data.reason;
+            curBox.style.borderColor = '#14b8a6';
+            curBox.style.color = '#14b8a6';
+            curBox.style.boxShadow = '0 0 12px rgba(20,184,166,0.3)';
+            ind.style.borderColor = '#14b8a6';
+            ind.style.boxShadow = '0 0 12px rgba(20,184,166,0.5)';
+            ind.innerHTML = `<svg class="w-4 h-4 text-brandTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`;
+        } else {
+            banner.style.background = 'rgba(239,68,68,0.07)';
+            banner.style.borderColor = 'rgba(239,68,68,0.3)';
+            badge.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border bg-brandRed/10 text-brandRed border-brandRed/30';
+            badge.textContent = '✗ Execution Blocked';
+            reason.className = 'text-sm font-medium text-brandRed';
+            reason.textContent = data.reason;
+            curBox.style.borderColor = '#ef4444';
+            curBox.style.color = '#ef4444';
+            curBox.style.boxShadow = '0 0 12px rgba(239,68,68,0.3)';
+            ind.style.borderColor = '#ef4444';
+            ind.style.boxShadow = '0 0 12px rgba(239,68,68,0.5)';
+            ind.innerHTML = `<svg class="w-4 h-4 text-brandRed" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>`;
+        }
+    }
+</script>
+{% endblock %}

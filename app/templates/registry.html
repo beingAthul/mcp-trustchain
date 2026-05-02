@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block header_title %}Tool Registry{% endblock %}
+{% block content %}
+
+<!-- Blocked Tools Banner (shown if any exist) -->
+{% set blocked = tools | selectattr('status', 'equalto', 'BLOCKED') | list %}
+{% if blocked %}
+<div class="mb-5 px-5 py-3 rounded-xl border border-brandRed/30 flex items-center gap-3 glow-red"
+    style="background: linear-gradient(90deg,rgba(239,68,68,0.1),rgba(239,68,68,0.04))">
+    <svg class="w-4 h-4 text-brandRed flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <p class="text-xs text-brandRed font-medium">{{ blocked|length }} tool(s) are currently <strong>BLOCKED</strong>.
+        See blocked entries below.</p>
+</div>
+{% endif %}
+
+<div class="rounded-xl border border-border/60 overflow-hidden"
+    style="background: linear-gradient(180deg,#0d1e35 0%,#0a1828 100%)">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-border/60 flex justify-between items-center"
+        style="background:rgba(59,130,246,0.06)">
+        <div>
+            <h2 class="text-sm font-semibold text-white">Registered Configurations</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Tools validated and tracked by MCP-Trustchain</p>
+        </div>
+        <a href="/scanner"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-slate-900 transition-all hover:brightness-110"
+            style="background: linear-gradient(90deg,#0d9488,#14b8a6)">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Register New
+        </a>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead style="background:rgba(0,0,0,0.2)"
+                class="text-xs text-slate-500 uppercase tracking-widest border-b border-border/60">
+                <tr>
+                    <th class="px-6 py-3 font-medium">Tool / ID</th>
+                    <th class="px-6 py-3 font-medium">Status</th>
+                    <th class="px-6 py-3 font-medium">Severity</th>
+                    <th class="px-6 py-3 font-medium">Canonical Hash</th>
+                    <th class="px-6 py-3 font-medium">Last Verified</th>
+                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-border/40">
+                {% if tools|length == 0 %}
+                <tr>
+                    <td colspan="6" class="px-6 py-14 text-center text-slate-600">
+                        <svg class="w-10 h-10 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        No tools registered yet. Scan a configuration to begin.
+                    </td>
+                </tr>
+                {% else %}
+                {% for tool in tools %}
+                <tr
+                    class="hover:bg-white/[0.02] transition-colors {% if tool.status == 'BLOCKED' %}border-l-2 border-l-brandRed/60{% endif %}">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-white text-sm">{{ tool.name }}</div>
+                        <div class="text-xs text-slate-600 font-mono mt-0.5">{{ tool.tool_id }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if tool.status in ['APPROVED', 'RE-APPROVED'] %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-brandTeal/10 text-brandTeal border border-brandTeal/25">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandTeal"></span>{{ tool.status }}
+                        </span>
+                        {% elif tool.status == 'BLOCKED' %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-brandRed/10 text-brandRed border border-brandRed/25">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandRed"></span>BLOCKED
+                        </span>
+                        {% elif tool.status == 'MODIFIED' %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-brandAmber/10 text-brandAmber border border-brandAmber/25">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandAmber animate-pulse"></span>MODIFIED
+                        </span>
+                        {% else %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-700/50 text-slate-400 border border-slate-600/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandGray"></span>{{ tool.status }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-xs font-semibold
+                            {% if tool.severity == 'CRITICAL' %} text-brandRed
+                            {% elif tool.severity == 'HIGH' %} text-brandAmber
+                            {% elif tool.severity == 'SAFE' %} text-brandTeal
+                            {% else %} text-slate-400 {% endif %}">
+                            {{ tool.severity }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-xs text-slate-500">
+                        {% if tool.approved_hash %}
+                        <span title="{{ tool.approved_hash }}">{{ tool.approved_hash[:10] }}…{{ tool.approved_hash[-8:]
+                            }}</span>
+                        {% else %}<span class="italic text-slate-700">None</span>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-500 tabular-nums">{{ tool.last_verified.replace('T','
+                        ')[:19] }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <!-- Re-verify / Re-approve button -->
+                            {% if tool.status in ['APPROVED','RE-APPROVED','MODIFIED'] %}
+                            <button onclick="openReverify('{{ tool.tool_id }}','{{ tool.name }}')"
+                                class="px-2.5 py-1 rounded text-xs font-semibold border border-brandIndigo/40 text-brandIndigo bg-brandIndigo/5 hover:bg-brandIndigo/15 transition-colors">
+                                Re-verify Hash
+                            </button>
+                            {% endif %}
+                            <!-- Block button -->
+                            {% if tool.status != 'BLOCKED' %}
+                            <button onclick="blockTool('{{ tool.tool_id }}','{{ tool.name }}')"
+                                class="px-2.5 py-1 rounded text-xs font-semibold border border-brandRed/40 text-brandRed bg-brandRed/5 hover:bg-brandRed/15 transition-colors">
+                                Block
+                            </button>
+                            {% else %}
+                            <span class="text-xs text-slate-700 italic">Quarantined</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Reverify Modal -->
+<div id="reverifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center"
+    style="background:rgba(5,13,31,0.8); backdrop-filter:blur(6px)">
+    <div class="w-full max-w-lg rounded-xl border border-border overflow-hidden shadow-2xl" style="background:#0d1e35">
+        <div class="px-6 py-4 border-b border-border/60 flex justify-between items-center"
+            style="background:rgba(99,102,241,0.08)">
+            <h3 class="text-sm font-semibold text-white">Re-verify &amp; Re-approve Hash</h3>
+            <button onclick="document.getElementById('reverifyModal').classList.add('hidden')"
+                class="text-slate-500 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-xs text-slate-400">Paste the current mcp.json payload for <strong id="reverifyToolName"
+                    class="text-white"></strong>. A new SHA-256 hash will be computed and stored as the new approved
+                baseline.</p>
+            <textarea id="reverifyJson"
+                class="w-full bg-surface border border-border rounded-lg p-3 font-mono text-xs text-slate-300 resize-none focus:outline-none focus:border-brandIndigo/60 transition-colors h-40"
+                placeholder='Paste current mcp.json…'></textarea>
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('reverifyModal').classList.add('hidden')"
+                    class="px-4 py-2 text-sm text-slate-400 hover:text-white border border-border/60 rounded-lg transition-colors">Cancel</button>
+                <button id="reverifySubmit"
+                    class="px-4 py-2 text-sm font-semibold text-slate-900 rounded-lg transition-all hover:brightness-110"
+                    style="background: linear-gradient(90deg,#6366f1,#818cf8)">Re-approve</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let _reverifyToolId = '';
+
+    function openReverify(tid, tname) {
+        _reverifyToolId = tid;
+        document.getElementById('reverifyToolName').innerText = tname;
+        document.getElementById('reverifyJson').value = '';
+        document.getElementById('reverifyModal').classList.remove('hidden');
+    }
+
+    document.getElementById('reverifySubmit').addEventListener('click', async () => {
+        const payload = document.getElementById('reverifyJson').value.trim();
+        if (!payload) return alert('Please paste the current mcp.json.');
+        let parsed;
+        try { parsed = JSON.parse(payload); } catch (e) { return alert('Invalid JSON format.'); }
+
+        const resp = await fetch('/api/v1/reverify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tool_id: _reverifyToolId, config: parsed })
+        });
+        const data = await resp.json();
+        if (data.status === 'success') {
+            alert(`✓ Tool re-approved!\nNew Hash: ${data.new_hash}`);
+            location.reload();
+        } else { alert('Re-verify failed.'); }
+    });
+
+    async function blockTool(tid, tname) {
+        const reason = prompt(`Enter reason for blocking "${tname}" (or leave blank for default):`) ?? '';
+        if (reason === null) return; // user cancelled
+        const resp = await fetch('/api/v1/block', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tool_id: tid, reason: reason || 'Manually blocked by admin.' })
+        });
+        const data = await resp.json();
+        if (data.status === 'success') { alert(`✓ ${data.message}`); location.reload(); }
+        else alert('Block operation failed.');
+    }
+</script>
+{% endblock %}

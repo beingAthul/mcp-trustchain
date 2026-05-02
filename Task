@@ -1,0 +1,29 @@
+# MCP-Trustchain Task Breakdown
+
+- [ ] **Planning**
+  - [/] Finalize folder structure and tech stack
+  - [/] Define API route definitions
+  - [/] Design rule structures for `rules.yaml`
+- [ ] **Project Setup**
+  - [ ] Initialize Python virtual environment & dependencies
+  - [ ] Scaffold folder structure
+- [ ] **Backend Implementation (MCP-Trustchain Server)**
+  - [ ] Implement `rules.yaml` configurations
+  - [ ] Implement `app/core/scanner.py` (Static Analysis)
+  - [ ] Implement `app/core/integrity.py` (SHA-256 canonical hashing)
+  - [ ] Implement Data Storage (`app/db.py`) for tool lifecycle and audit logs
+  - [ ] Create API routes (`/scan`, `/approve`, `/verify`, `/audit`) in `app/api/routes.py`
+  - [ ] Setup Jinja2 templates serving in `app/web/views.py`
+- [ ] **UI Implementation (Modern Enterprise UI)**
+  - [ ] Setup `base.html` with Sidebar Navigation (TailwindCSS, Heroicons)
+  - [ ] Create Dashboard page (`dashboard.html`)
+  - [ ] Create Static Scanner page (`scanner.html`) with buffering motion
+  - [ ] Create Tool Registry page (`registry.html`) with status badges
+  - [ ] Create Verify Simulation page (`verify.html`)
+  - [ ] Create Audit Log page (`audit.html`)
+- [ ] **Client Simulation (MCP Client)**
+  - [ ] Create simulated MCP Client (`client_sim/mcp_client.py`)
+  - [ ] Create safe and compromised dummy `mcp.json` configs
+- [ ] **Integration & Testing**
+  - [ ] Connect UI to backend APIs
+  - [ ] Test the entire flow from scanning to approval to verification

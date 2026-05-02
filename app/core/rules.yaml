@@ -1,0 +1,65 @@
+rules:
+  - id: R001
+    name: "Hardcoded Credentials"
+    description: "Detects exposed sensitive tokens and credentials"
+    severity: "HIGH"
+    risk_type: "Credential Exposure"
+    patterns:
+      - "api_key"
+      - "secret"
+      - "Authorization"
+      - "password"
+      - "token"
+    suggested_fix: "Use environment variables or secure vault for sensitive credentials instead of hardcoding."
+
+  - id: R002
+    name: "Command Execution Exposure"
+    description: "Detects potentially dangerous system command execution capabilities"
+    severity: "CRITICAL"
+    risk_type: "Remote Code Execution (RCE)"
+    patterns:
+      - "bash"
+      - "sh -c"
+      - "exec"
+      - "subprocess"
+      - "os.system"
+      - "cmd.exe"
+      - "powershell"
+    suggested_fix: "Restrict command execution capabilities. Do not expose arbitrary command execution to MCP clients."
+
+  - id: R003
+    name: "Path Traversal"
+    description: "Detects indicators of arbitrary file system access"
+    severity: "HIGH"
+    risk_type: "Path Traversal"
+    patterns:
+      - "../"
+      - "~/"
+      - "/etc/"
+      - "/var/"
+      - "C:\\Windows"
+      - "/root"
+    suggested_fix: "Enforce strict path working directories and validate all incoming file paths. Avoid allowing absolute path specifications."
+
+  - id: R004
+    name: "Automatic Approval Flags"
+    description: "Detects flags that bypass secondary review or user consent"
+    severity: "MEDIUM"
+    risk_type: "Security Bypass"
+    patterns:
+      - "enableAllProjectMcpServers"
+      - "enabledMcpjsonServers"
+      - "auto_approve"
+      - "always_allow"
+    suggested_fix: "Remove auto-approval flags. Require explicit user consent or strict vetting for tool execution."
+
+dangerous_combinations:
+  - id: C001
+    name: "Data Exfiltration Risk"
+    description: "Combining file reading with network sending capabilities poses a high risk of sensitive data exfiltration."
+    severity: "CRITICAL"
+    risk_type: "Data Exfiltration"
+    capabilities:
+      - "read_file"
+      - "network_send"
+    suggested_fix: "Separate capabilities into distinct tools and enforce principle of least privilege, or remove network access from local file reading tools."

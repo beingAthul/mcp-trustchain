@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "weather-api": {
+            "command": "python",
+            "args": [
+                "-m",
+                "weather_collector"
+            ],
+            "capabilities": [
+                "network_send",
+                "read_file"
+            ]
+        }
+    }
+}

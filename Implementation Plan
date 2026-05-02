@@ -1,0 +1,58 @@
+# MCP-Trustchain Implementation Plan
+
+This document outlines the architecture and implementation strategy for the MCP-Trustchain project, a deterministic, rule-based cybersecurity enforcement system for MCP tool configurations.
+
+## Proposed Changes
+
+### 1. Project Organization
+The project will follow a standard FastAPI layout:
+- `app/main.py`: Application entry point.
+- `app/api/`: REST endpoints (`POST /scan`, etc.).
+- `app/web/`: Jinja2 view template rendering.
+- `app/core/`: Security and validation logic.
+- `app/templates/` & `app/static/`: Frontend resources.
+- `client_sim/`: Simulation files for MCP Client and Server tools.
+
+### 2. Backend Modules & API Definitions
+
+- **Scanner module (`app/core/scanner.py`)**: Parses configuring using rules defined in `rules.yaml`. Identifies Risk Type, Severity, Explanation, and Fix for hardcoded credentials, command exposure, path traversal, automatic approval flags, and dangerous capability combos.
+- **Integrity module (`app/core/integrity.py`)**: Uses canonical JSON encoding for configurations and computes SHA-256 hashes.
+- **Data storage module (`app/db.py`)**: Stores tool lifecycle states (NEW, APPROVED, MODIFIED, BLOCKED, RE-APPROVED) and audit logs. We will use SQLite to keep the project lightweight but robust.
+- **API Routes (`app/api/routes.py`)**:
+  - `POST /scan`: Scans tool configuration against rules.
+  - `POST /approve`: Transitions state to APPROVED, computes hash, logs audit.
+  - `POST /verify`: Takes config, hashes it, checks if matches APPROVED hash. Returns ALLOW/BLOCK.
+  - `GET /audit`: Returns full audit log.
+
+### 3. Frontend & Styling Plan
+
+- **Framework**: Tailwind CSS via CDN (for simplicity, no Node.js build required) + Heroicons via URL. FastAPI will serve the static files and Jinja2 templates.
+- **Pages**:
+  - `dashboard.html`: Metric cards (Total Tools, Approved, Blocked, Violations).
+  - `scanner.html`: Split layout for upload/scan, includes unique buffering animation for scan process.
+  - `registry.html`: Table with custom status badges (Teal: APPROVED, Red: BLOCKED, Amber: MODIFIED, Gray: NEW).
+  - `verify.html`: Visual match indicator and comparison of Approved Hash vs Current Hash.
+  - `audit.html`: Timeline of actions, timestamp, result, reason.
+  - `base.html`: Common layout with global side navigation sidebar and theme configuration (`#0f172a` primary, `#1e293b` panel, `#e2e8f0` text). Design will have modern typography (Inter), 80px section padding, 40px between panels.
+
+### 4. Client Simulation Module
+- `client_sim/mcp_client.py`: Python script simulating the Host environment, requesting validation before calling tools.
+- Included safe/compromised JSON samples to represent tool server files, containing items like command execution exposure, path traversals, etc.
+
+## User Review Required
+
+Does this architecture and module structure meet the project requirements?
+I plan to use SQLite (via standard Python `sqlite3`) to handle the database requirements persistently yet simply, and TailwindCSS via CDN to ensure we meet the UI requirements without needing a complex Node.js build process within the Python environment. Please review and approve this plan so I can proceed to standard setup and execution.
+
+## Verification Plan
+
+### Automated Tests
+1. Generate Pytest unit tests for `app/core/scanner.py` to verify rule detection.
+2. Generate Pytest unit tests for `app/core/integrity.py` to verify canonical JSON hashing consistency.
+3. Test combinations of safe and compromised tools using the `client_sim/mcp_client.py` simulation.
+
+### Manual Verification
+1. Run the FastAPI development server.
+2. Open the UI in a browser to navigate Dashboard, Scanner, Registry, Verify, and Audit pages.
+3. Manually upload a compromised `mcp.json` to see the buffering animation and static scanner results.
+4. Manually trigger a mismatch in the Verify section to see the ALLOW/BLOCK visual differences.

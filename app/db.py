@@ -36,6 +36,17 @@ def init_db():
             tool_id TEXT
         )
     ''')
+    # Tool Versions Table (for rollback)
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS tool_versions (
+            version_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tool_id TEXT,
+            config_snapshot TEXT,
+            hash TEXT,
+            timestamp TEXT,
+            status TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -55,6 +66,29 @@ def register_tool(tool_id: str, name: str, status: str, severity: str, approved_
     ''', (tool_id, name, status, severity, approved_hash, now))
     conn.commit()
     conn.close()
+
+def save_tool_version(tool_id: str, config_snapshot: str, hash: str, status: str):
+    conn = get_connection()
+    c = conn.cursor()
+    now = datetime.utcnow().isoformat()
+    c.execute('''
+        INSERT INTO tool_versions (tool_id, config_snapshot, hash, timestamp, status)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (tool_id, config_snapshot, hash, now, status))
+    conn.commit()
+    conn.close()
+
+def get_last_approved_version(tool_id: str) -> Dict[str, Any]:
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('''
+        SELECT * FROM tool_versions 
+        WHERE tool_id = ? AND status = 'APPROVED' 
+        ORDER BY timestamp DESC LIMIT 1
+    ''', (tool_id,))
+    row = c.fetchone()
+    conn.close()
+    return dict(row) if row else None
 
 def get_all_tools() -> List[Dict[str, Any]]:
     conn = get_connection()

@@ -1,57 +1,230 @@
 rules:
+  # --- A. Permission & Exposure Issues ---
   - id: R001
-    name: "Hardcoded Credentials"
-    description: "Detects exposed sensitive tokens and credentials"
+    name: "Overly Broad Permissions"
+    description: "Detects permissions that grant access to root or relative base paths."
+    severity: "HIGH"
+    risk_type: "Permission Exposure"
+    patterns:
+      - '"./"'
+      - '"/"'
+      - '"C:\\"'
+    suggested_fix: "Restrict access to specific subdirectories instead of root or relative base paths."
+
+  - id: R002
+    name: "Missing Capability Restrictions"
+    description: "Detects configurations that lack explicit path or domain constraints."
+    severity: "MEDIUM"
+    risk_type: "Unbounded Capabilities"
+    missing_patterns:
+      - "allowed_paths"
+      - "constraints"
+    suggested_fix: "Add explicit 'allowed_paths' or 'constraints' properties to limit tool capabilities."
+
+  - id: R003
+    name: "Wildcard Domain Access"
+    description: "Detects wildcard configurations allowing access to any domain."
+    severity: "HIGH"
+    risk_type: "Network Exposure"
+    patterns:
+      - '"*"'
+    suggested_fix: "Specify explicitly allowed domains instead of using wildcards."
+
+  - id: R004
+    name: "Unrestricted Endpoints"
+    description: "Detects endpoints that accept any subpath or parameter unconditionally."
+    severity: "MEDIUM"
+    risk_type: "Network Exposure"
+    patterns:
+      - "http://*"
+      - "https://*"
+    suggested_fix: "Define specific, exact endpoint URLs."
+
+  - id: R005
+    name: "Insecure Protocols"
+    description: "Detects the use of unencrypted communication protocols."
+    severity: "MEDIUM"
+    risk_type: "Insecure Transport"
+    patterns:
+      - "http://"
+      - "ws://"
+      - "ftp://"
+    suggested_fix: "Use secure protocols such as HTTPS, WSS, or SFTP."
+
+  # --- B. Sensitive Data Exposure ---
+  - id: R006
+    name: "Hardcoded OAuth/Bearer Tokens"
+    description: "Detects hardcoded authentication tokens."
     severity: "HIGH"
     risk_type: "Credential Exposure"
     patterns:
-      - "api_key"
-      - "secret"
-      - "Authorization"
-      - "password"
-      - "token"
-    suggested_fix: "Use environment variables or secure vault for sensitive credentials instead of hardcoding."
+      - "bearer "
+      - "oauth_token"
+      - "ghp_"
+      - "xoxb-"
+    suggested_fix: "Use secure vault or environment variables for tokens."
 
-  - id: R002
-    name: "Command Execution Exposure"
-    description: "Detects potentially dangerous system command execution capabilities"
+  - id: R007
+    name: "Secrets in Environment Variables"
+    description: "Detects passing secrets broadly through environment variables."
+    severity: "MEDIUM"
+    risk_type: "Credential Exposure"
+    patterns:
+      - "env_vars: "
+      - "process.env"
+      - "secret_key"
+    suggested_fix: "Use dedicated secret management tools instead of raw environment variables."
+
+  - id: R008
+    name: "Embedded Private Keys"
+    description: "Detects embedded private key material."
+    severity: "CRITICAL"
+    risk_type: "Credential Exposure"
+    patterns:
+      - "-----begin private key-----"
+      - "-----begin rsa private key-----"
+    suggested_fix: "Remove embedded private keys. Use external keystores."
+
+  - id: R009
+    name: "Sensitive Data in Logs"
+    description: "Detects logging configurations that might leak sensitive data."
+    severity: "MEDIUM"
+    risk_type: "Data Leakage"
+    patterns:
+      - "log_level: debug"
+      - "verbose_logging: true"
+    suggested_fix: "Set logging level to INFO or WARN in production environments."
+
+  - id: R010
+    name: "Debug Mode Enabled"
+    description: "Detects debug flags that expose internal system state."
+    severity: "HIGH"
+    risk_type: "Information Exposure"
+    patterns:
+      - "debug: true"
+      - "flask_debug=1"
+    suggested_fix: "Disable debug modes before deployment."
+
+  # --- C. Execution Risks ---
+  - id: R011
+    name: "Dynamic Command Construction"
+    description: "Detects potentially unsafe dynamic execution of code."
+    severity: "CRITICAL"
+    risk_type: "Remote Code Execution (RCE)"
+    patterns:
+      - "eval("
+      - "exec("
+      - "system("
+    suggested_fix: "Avoid dynamic code execution. Use parameterized APIs instead."
+
+  - id: R012
+    name: "Shell Usage"
+    description: "Detects invocation of system shells."
     severity: "CRITICAL"
     risk_type: "Remote Code Execution (RCE)"
     patterns:
       - "bash"
       - "sh -c"
-      - "exec"
-      - "subprocess"
-      - "os.system"
       - "cmd.exe"
       - "powershell"
-    suggested_fix: "Restrict command execution capabilities. Do not expose arbitrary command execution to MCP clients."
+    suggested_fix: "Avoid invoking shells directly."
 
-  - id: R003
-    name: "Path Traversal"
-    description: "Detects indicators of arbitrary file system access"
+  - id: R013
+    name: "Explicit Execution Permissions"
+    description: "Detects flags that grant execution rights."
+    severity: "HIGH"
+    risk_type: "Execution Permission"
+    patterns:
+      - "allow_exec: true"
+      - "execute_commands"
+    suggested_fix: "Remove explicit execution permissions."
+
+  - id: R014
+    name: "Background/Daemon Processes"
+    description: "Detects capabilities to run long-lived or background processes."
+    severity: "MEDIUM"
+    risk_type: "Resource Exhaustion"
+    patterns:
+      - "daemonize"
+      - "nohup"
+      - "background: true"
+    suggested_fix: "Prevent tools from running detached background tasks."
+
+  - id: R015
+    name: "Remote Script Execution"
+    description: "Detects downloading and immediate execution of remote scripts."
+    severity: "CRITICAL"
+    risk_type: "Remote Code Execution (RCE)"
+    patterns:
+      - "curl | bash"
+      - "wget -qo-"
+    suggested_fix: "Do not execute remote scripts dynamically."
+
+  # --- D. Network & Exfiltration Risks ---
+  - id: R016
+    name: "Data Sending Capabilities"
+    description: "Detects capabilities explicitly meant for outbound data transfer."
+    severity: "HIGH"
+    risk_type: "Data Exfiltration"
+    patterns:
+      - "send_data"
+      - "post_data"
+    suggested_fix: "Review and restrict data transmission tools."
+
+  - id: R017
+    name: "Wildcard Webhook URLs"
+    description: "Detects webhooks that can be configured dynamically or openly."
+    severity: "MEDIUM"
+    risk_type: "Data Exfiltration"
+    patterns:
+      - "webhook_url: *"
+    suggested_fix: "Hardcode specific webhook URLs instead of wildcards."
+
+  - id: R018
+    name: "Excessive Outbound Domains"
+    description: "Detects bypasses of network restrictions."
+    severity: "HIGH"
+    risk_type: "Network Exposure"
+    patterns:
+      - "allow_all_domains"
+      - "cors: *"
+    suggested_fix: "Restrict outbound connections to known, safe domains."
+
+  # --- E. File System Risks ---
+  - id: R019
+    name: "Absolute System Paths"
+    description: "Detects access to sensitive global system paths."
     severity: "HIGH"
     risk_type: "Path Traversal"
     patterns:
-      - "../"
-      - "~/"
       - "/etc/"
       - "/var/"
-      - "C:\\Windows"
       - "/root"
-    suggested_fix: "Enforce strict path working directories and validate all incoming file paths. Avoid allowing absolute path specifications."
+      - "/usr/bin"
+    suggested_fix: "Limit file operations to an isolated working directory."
 
-  - id: R004
+  - id: R020
+    name: "Write Access Enabled"
+    description: "Detects explicit file modification capabilities."
+    severity: "HIGH"
+    risk_type: "System Tampering"
+    patterns:
+      - "write_file"
+      - "fs.writefile"
+      - "modify_system"
+    suggested_fix: "Remove write capabilities unless strictly required and scoped."
+
+  # --- Previous Rules kept as combinations ---
+  - id: R021
     name: "Automatic Approval Flags"
-    description: "Detects flags that bypass secondary review or user consent"
+    description: "Detects flags that bypass secondary review or user consent."
     severity: "MEDIUM"
     risk_type: "Security Bypass"
     patterns:
-      - "enableAllProjectMcpServers"
-      - "enabledMcpjsonServers"
+      - "enableallprojectmcpservers"
       - "auto_approve"
       - "always_allow"
-    suggested_fix: "Remove auto-approval flags. Require explicit user consent or strict vetting for tool execution."
+    suggested_fix: "Remove auto-approval flags. Require explicit user consent."
 
 dangerous_combinations:
   - id: C001
@@ -62,4 +235,4 @@ dangerous_combinations:
     capabilities:
       - "read_file"
       - "network_send"
-    suggested_fix: "Separate capabilities into distinct tools and enforce principle of least privilege, or remove network access from local file reading tools."
+    suggested_fix: "Separate capabilities into distinct tools and enforce principle of least privilege."

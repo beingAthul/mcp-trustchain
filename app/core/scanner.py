@@ -40,18 +40,49 @@ class StaticScanner:
 
         # 1. Check patterns
         for rule in self.rules.get('rules', []):
-            for pattern in rule.get('patterns', []):
+            patterns = rule.get('patterns', [])
+            missing_patterns = rule.get('missing_patterns', [])
+            
+            rule_triggered = False
+            matched_info = ""
+
+            # Check patterns (trigger if ANY exist)
+            for pattern in patterns:
                 pattern_lower = pattern.lower()
                 for text in config_text_lower:
                     if pattern_lower in text:
-                        results.append(ScannerResult(
-                            risk_type=rule['risk_type'],
-                            severity=rule['severity'],
-                            explanation=f"{rule['description']} (Matched: '{pattern}')",
-                            suggested_fix=rule['suggested_fix'],
-                            rule_id=rule['id']
-                        ))
-                        break # Only report once per rule
+                        rule_triggered = True
+                        matched_info = f"Matched: '{pattern}'"
+                        break
+                if rule_triggered:
+                    break
+
+            # Check missing_patterns (trigger if NONE exist)
+            if not rule_triggered and missing_patterns:
+                all_missing = True
+                for m_pattern in missing_patterns:
+                    m_pattern_lower = m_pattern.lower()
+                    pattern_found = False
+                    for text in config_text_lower:
+                        if m_pattern_lower in text:
+                            pattern_found = True
+                            break
+                    if pattern_found:
+                        all_missing = False
+                        break
+                
+                if all_missing:
+                    rule_triggered = True
+                    matched_info = f"Missing required fields: {', '.join(missing_patterns)}"
+
+            if rule_triggered:
+                results.append(ScannerResult(
+                    risk_type=rule['risk_type'],
+                    severity=rule['severity'],
+                    explanation=f"{rule['description']} ({matched_info})",
+                    suggested_fix=rule['suggested_fix'],
+                    rule_id=rule['id']
+                ))
 
         # 2. Check dangerous combinations
         for combo in self.rules.get('dangerous_combinations', []):

@@ -30,6 +30,9 @@ class ReverifyRequest(BaseModel):
     tool_id: str
     config: Dict[str, Any]
 
+class RollbackRequest(BaseModel):
+    tool_id: str
+
 @router.post("/scan")
 async def scan_config(request: Request):
     try:
@@ -64,6 +67,13 @@ async def approve_tool(req: ApproveRequest):
         status="APPROVED",
         severity="SAFE",
         approved_hash=canonical_hash
+    )
+
+    db.save_tool_version(
+        tool_id=req.tool_id,
+        config_snapshot=json.dumps(req.config),
+        hash=canonical_hash,
+        status="APPROVED"
     )
 
     db.log_audit(
@@ -156,7 +166,51 @@ async def reverify_tool(req: ReverifyRequest):
         tool_id=req.tool_id
     )
 
+    db.save_tool_version(
+        tool_id=req.tool_id,
+        config_snapshot=json.dumps(req.config),
+        hash=new_hash,
+        status="APPROVED"
+    )
+
     return {"status": "success", "new_hash": new_hash, "tool_id": req.tool_id}
+
+@router.post("/rollback")
+async def rollback_tool(req: RollbackRequest):
+    last_version = db.get_last_approved_version(req.tool_id)
+    if not last_version:
+        raise HTTPException(status_code=400, detail="No approved version history found for rollback.")
+        
+    config_str = last_version['config_snapshot']
+    config = json.loads(config_str)
+    
+    canonical_hash = integrity.generate_canonical_hash(config)
+    
+    tool = db.get_tool(req.tool_id)
+    tool_name = tool['name'] if tool else req.tool_id
+    
+    db.register_tool(
+        tool_id=req.tool_id,
+        name=tool_name,
+        status="APPROVED",
+        severity="SAFE",
+        approved_hash=canonical_hash
+    )
+    
+    db.log_audit(
+        action="ROLLBACK",
+        result="SUCCESS",
+        reason=f"Tool configuration rolled back to last approved state (Version {last_version['version_id']}).",
+        tool_id=req.tool_id
+    )
+    
+    return {
+        "status": "success",
+        "message": "Tool configuration rolled back successfully.",
+        "tool_id": req.tool_id,
+        "restored_version": last_version['version_id'],
+        "restored_hash": canonical_hash
+    }
 
 @router.get("/audit")
 async def get_audit_logs():
